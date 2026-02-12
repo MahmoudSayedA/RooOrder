@@ -1,5 +1,5 @@
 ﻿using Application.Identity.Services;
-using Domain.Entities;
+using Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;

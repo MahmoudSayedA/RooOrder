@@ -1,4 +1,5 @@
 ﻿using Domain.Constants;
+using Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -65,20 +66,20 @@ public class ApplicationDbContextInitialiser(
         }
          
         // Default users
-        var admin = new ApplicationUser { UserName = "admin@rooorder.com", Email = "admin@rooorder.com" };
-        var user = new ApplicationUser { UserName = "user@rooorder.com", Email = "user@rooorder.com" };
+        //var admin = new ApplicationUser { UserName = "admin@rooorder.com", Email = "admin@rooorder.com" };
+        //var user = new ApplicationUser { UserName = "user@rooorder.com", Email = "user@rooorder.com" };
 
-        if (userManager.Users.All(u => u.UserName != admin.UserName))
-        {
-            await userManager.CreateAsync(admin, "123456");
-            await userManager.AddToRolesAsync(admin, new[] { Roles.Admin });
+        //if (userManager.Users.All(u => u.UserName != admin.UserName))
+        //{
+        //    await userManager.CreateAsync(admin, "123456");
+        //    await userManager.AddToRolesAsync(admin, new[] { Roles.Admin });
 
-            if (!await userManager.Users.AnyAsync(u => u.UserName == user.UserName))
-            {
-                await userManager.CreateAsync(user, "123456");
-                await userManager.AddToRoleAsync(user, Roles.User);
-            }
-        }
+        //    if (!await userManager.Users.AnyAsync(u => u.UserName == user.UserName))
+        //    {
+        //        await userManager.CreateAsync(user, "123456");
+        //        await userManager.AddToRoleAsync(user, Roles.User);
+        //    }
+        //}
         
     }
 }
