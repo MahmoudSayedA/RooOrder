@@ -1,4 +1,6 @@
-﻿namespace Application.Identity.Services
+﻿using Domain.Entities.Users;
+
+namespace Application.Identity.Services
 {
     public interface ITokenGeneratorService
     {

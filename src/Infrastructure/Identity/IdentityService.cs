@@ -2,6 +2,7 @@ using Application.Common.Exceptions;
 using Application.Common.Models;
 using Application.Identity.Dtos;
 using Application.Identity.Services;
+using Domain.Entities.Users;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -40,7 +41,7 @@ public class IdentityService : IAuthenticationService,
 
     public async Task<Result<Guid>> RegisterAsync(RegisterDto model)
     {
-        ApplicationUser user = new()
+        Customer user = new()
         {
             UserName = model.Username,
             Email = model.Email,

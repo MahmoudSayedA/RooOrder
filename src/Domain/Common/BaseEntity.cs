@@ -2,14 +2,14 @@
 
 namespace Domain.Common;
 
-public abstract class BaseEntity : BaseEntity<Ulid>
+public abstract class BaseEntity : BaseEntity<int>
 {
-    public override Ulid Id { get; set; } = Ulid.NewUlid();
+    public override int Id { get; set; }
 }
 
 public abstract class BaseEntity<TId>
 {
-    public virtual TId Id { get; set; }
+    public virtual TId? Id { get; set; }
 
     private readonly List<BaseEvent> _domainEvents = [];
 

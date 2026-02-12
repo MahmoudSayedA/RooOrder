@@ -1,4 +1,6 @@
 ﻿using Application.Common.Abstractions.Data;
+using Domain.Entities.Restaurants;
+using Domain.Entities.Users;
 using Infrastructure.Data.Configurations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -12,7 +14,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
-    public DbSet<Product> Products => Set<Product>();
+    public DbSet<Restaurant> Restaurants => Set<Restaurant>();
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<RestaurantWorkingHours> RestaurantWorkingHours => Set<RestaurantWorkingHours>();
+    public DbSet<MenuItem> MenuItems => Set<MenuItem>();
+
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
