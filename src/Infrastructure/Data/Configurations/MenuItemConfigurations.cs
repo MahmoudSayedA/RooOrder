@@ -18,7 +18,7 @@ internal class MenuItemConfigurations : IEntityTypeConfiguration<MenuItem>
         builder.HasOne(m => m.Restaurant)
             .WithMany(r => r.MenuItems)
             .HasForeignKey(m => m.RestaurantId) 
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(m => m.Category)
             .WithMany()
