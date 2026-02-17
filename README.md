@@ -1,4 +1,8 @@
-﻿# Roo Order – Backend API
+<p align="center">
+  <img src="docs/assets/RooOrder_logo_noBg.png" alt="Logo" width="400"/>
+</p>
+ 
+ # Roo Order – Backend API
 
 Roo Order is a food ordering system that connects customers with restaurants, allowing users to browse menus, place orders, and track order status in real time.
 The system is designed with scalability in mind and can support mobile and web clients.
