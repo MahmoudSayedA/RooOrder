@@ -7,6 +7,20 @@
 Roo Order is a food ordering system that connects customers with restaurants, allowing users to browse menus, place orders, and track order status in real time.
 The system is designed with scalability in mind and can support mobile and web clients.
 
+## Remote Access Dev
+
+Api is hosting now on a remote server, and can be accessed via the following URL:
+- [link](http://roo-order.runasp.net)
+```
+http://roo-order.runasp.net
+```
+## API Documentation
+- [link](http://roo-order.runasp.net/swagger/index.html)
+```
+http://roo-order.runasp.net/swagger/index.html
+```
+---
+
 ## System Overview
 
 The backend exposes a RESTful API consumed by a mobile application.

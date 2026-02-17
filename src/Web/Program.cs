@@ -25,14 +25,14 @@ builder.Host.UseSerilog((context, ConfigurationBinder) =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.MapOpenApi();
     app.MapSwagger();
     app.UseSwagger();
     app.UseSwaggerUI();
     // seed env-data
-}
+//}
 
 //app.UseHttpsRedirection();
 
