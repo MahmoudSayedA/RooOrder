@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-
-namespace Application.Identity.Services;
+﻿namespace Application.Identity.Services;
 
 public interface IUser
 {
