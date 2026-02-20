@@ -8,27 +8,38 @@ public class InMemoryCacheService(IMemoryCache cache) : ICacheService
 {
     private readonly IMemoryCache _cache = cache;
 
-    public async Task RemoveAsync(string key, CancellationToken cancellationToken)
+    public Task RemoveAsync(string key, CancellationToken ct = default)
     {
-        await Task.Run(() => _cache.Remove(key), cancellationToken);
+        _cache.Remove(key);
+        return Task.CompletedTask;
     }
 
     public async Task<T?> GetDataAsync<T>(string key, CancellationToken cancellationToken)
     {
-        var data = await Task.Run(() => _cache.Get(key), cancellationToken) as string;
-        if (data is null)
-        {
-            return default;
-        }
+        T? value = default;
+        await Task.Run(() => _cache.TryGetValue(key, out T? value));
 
-        return JsonSerializer.Deserialize<T>(data);
+        return value;
     }
-
     public async Task SetDataAsync<T>(string key, T data, CancellationToken cancellationToken)
     {
+        var option = new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30),
+            AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(10)
+        };
+        await Task.Run(() => _cache.Set(key, data, option));
 
-        await Task.Run(() => _cache.Set(key, JsonSerializer.Serialize(data)), cancellationToken);
+    }
 
+    public async Task SetDataAsync<T>(string key, T data, TimeSpan time, CancellationToken cancellationToken)
+    {
+        var option = new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = time / 2,
+            AbsoluteExpiration = DateTimeOffset.Now.Add(time)
+        };
+        await Task.Run(() => _cache.Set(key, data, option));
     }
 
     public async Task<long> GetVersionAsync(string masterKey, CancellationToken cancellationToken)
@@ -45,3 +56,15 @@ public class InMemoryCacheService(IMemoryCache cache) : ICacheService
         await SetDataAsync(key, version, cancellationToken);
     }
 }
+
+
+/*
+ * cache invalidation
+
+Scenario                            | Sliding       | Absolute      | Why this ratio?
+------------------------------------|---------------|---------------|----------------
+User profile / session-like data    | 3–10 minutes  | 20–60 minutes | "Frequent reads during a session, but force refresh after ~30–60 min"
+Product details / catalog items     | 5–15 minutes  | 1–4 hours     | "Less volatile, but still refresh periodically"
+Configuration / settings            | 10–30 minutes | 12–24 hours   | "Rarely changes,  but absolute prevents eternal cache"
+Very volatile data(..stock price)   | 10–60 seconds | 5–30 minutes  | Sliding almost never triggers long life
+*/

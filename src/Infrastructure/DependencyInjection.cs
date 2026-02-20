@@ -8,6 +8,7 @@ using Domain.Entities.Users;
 using Hangfire;
 using Infrastructure.Data;
 using Infrastructure.Data.Interceptors;
+using Infrastructure.Data.Seeding;
 using Infrastructure.Identity;
 using Infrastructure.Identity.JWT;
 using Infrastructure.Services.Caching;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -59,42 +61,44 @@ namespace Infrastructure
         }
         private static void ConfigureRedisCache(IServiceCollection services, IConfiguration configuration)
         {
-            var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+            //var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
 
-            // Configure ConnectionMultiplexer with fail-fast settings
-            var configOptions = ConfigurationOptions.Parse(redisConnectionString);
-            configOptions.ConnectTimeout = 1000;      // 1 second
-            configOptions.SyncTimeout = 1000;
-            configOptions.AsyncTimeout = 1000;
-            configOptions.AbortOnConnectFail = false; // KEY: Don't abort, allow retries
-            configOptions.ConnectRetry = 2;
+            //// Configure ConnectionMultiplexer with fail-fast settings
+            //var configOptions = ConfigurationOptions.Parse(redisConnectionString);
+            //configOptions.ConnectTimeout = 1000;      // 1 second
+            //configOptions.SyncTimeout = 1000;
+            //configOptions.AsyncTimeout = 1000;
+            //configOptions.AbortOnConnectFail = false; // KEY: Don't abort, allow retries
+            //configOptions.ConnectRetry = 2;
 
 
-            services.AddSingleton<IConnectionMultiplexer>(sp =>
-            {
-                try
-                {
-                    return ConnectionMultiplexer.Connect(configOptions);
-                }
-                catch (RedisConnectionException ex)
-                {
-                    var logger = sp.GetRequiredService<ILogger>();
-                    logger.LogWarning(ex, "Redis not available at rooorder, will retry on first use");
+            //services.AddSingleton<IConnectionMultiplexer>(sp =>
+            //{
+            //    try
+            //    {
+            //        return ConnectionMultiplexer.Connect(configOptions);
+            //    }
+            //    catch (RedisConnectionException ex)
+            //    {
+            //        var logger = sp.GetRequiredService<ILogger>();
+            //        logger.LogWarning(ex, "Redis not available at RooOrder, will retry on first use");
 
-                    // Return a connection that will lazy-connect
-                    return ConnectionMultiplexer.Connect(configOptions);
-                }
-            });
+            //        // Return a connection that will lazy-connect
+            //        return ConnectionMultiplexer.Connect(configOptions);
+            //    }
+            //});
 
-            services.AddStackExchangeRedisCache(opt =>
-            {
-                opt.Configuration = redisConnectionString;
-                opt.InstanceName = "App_";
-                opt.ConfigurationOptions = configOptions;
-            });
+            //services.AddStackExchangeRedisCache(opt =>
+            //{
+            //    opt.Configuration = redisConnectionString;
+            //    opt.InstanceName = "App_";
+            //    opt.ConfigurationOptions = configOptions;
+            //});
 
-            services.AddScoped<RedisCacheService>();
-            services.AddScoped<ICacheService, ResilientCacheService>();
+            //services.AddScoped<RedisCacheService>();
+            //services.AddScoped<ICacheService, ResilientCacheService>();
+            services.AddMemoryCache();
+            services.AddScoped<ICacheService, InMemoryCacheService>(); // TODO: Switch to RedisCacheService or ResilientCacheService in production
         }
 
         private static void ConfigureDbContext(IServiceCollection services, IConfiguration configuration)
@@ -116,6 +120,7 @@ namespace Infrastructure
 
             services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
             services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
+            services.AddScoped<ApplicationDbContextInitialiser>();
 
         }
 
@@ -123,10 +128,10 @@ namespace Infrastructure
         {
             services.AddIdentity<ApplicationUser, ApplicationRole>(o =>
             {
-                o.Password.RequireDigit = true;
-                o.Password.RequireLowercase = true;
-                o.Password.RequireUppercase = true;
-                o.Password.RequireNonAlphanumeric = false;
+                o.Password.RequireDigit = false;
+                o.Password.RequireLowercase = false;
+                o.Password.RequireUppercase = false;
+                o.Password.RequireNonAlphanumeric = false; // TODO: Change this in production
                 o.Password.RequiredLength = 6;
                 o.User.RequireUniqueEmail = true;
                 o.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);

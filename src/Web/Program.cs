@@ -5,6 +5,7 @@ using Serilog;
 using Infrastructure.Logging;
 using Hangfire;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Infrastructure.Data.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +54,8 @@ app.UseSerilogRequestLogging();
 app.UseHangfireDashboard("/hangfire");
 
 app.MapGet("/", () => "RooOrder is working");
+
+await app.InitializeDatabaseAsync();
 
 app.Run();
 

@@ -1,22 +1,27 @@
 ﻿using Domain.Constants;
+using Domain.Entities.Restaurants;
 using Domain.Entities.Users;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Data.Seeding;
 
 public static class InitialiserExtensions
 {
-    //public static async Task InitialiseDatabaseAsync(this IApplicationBuilder app)
-    //{
-    //    using var scope = app.ApplicationServices.CreateScope();
+    public static async Task InitializeDatabaseAsync(this IApplicationBuilder app)
+    {
+        using var scope = app.ApplicationServices.CreateScope();
 
-    //    var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
+        var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
 
-    //    await initialiser.InitialiseAsync();
-    //    await initialiser.SeedAsync();
-    //}
+        if(await initialiser.InitialiseAsync())
+        {
+            await initialiser.SeedAsync();
+        }
+    }
 }
 
 public class ApplicationDbContextInitialiser(
@@ -25,12 +30,13 @@ public class ApplicationDbContextInitialiser(
     UserManager<ApplicationUser> userManager,
     RoleManager<ApplicationRole> roleManager)
 {
-    public async Task InitialiseAsync()
+    public async Task<bool> InitialiseAsync()
     {
         try
         {
-            await context.Database.EnsureDeletedAsync();
+            // await context.Database.EnsureDeletedAsync();
             await context.Database.EnsureCreatedAsync();
+            return true;
         }
         catch (Exception ex)
         {
@@ -55,7 +61,7 @@ public class ApplicationDbContextInitialiser(
     private async Task TrySeedAsync()
     {
         // Default roles
-        var allRoles = typeof(Roles).GetMembers().Select(i => i.Name).ToList();
+        string[] allRoles = [Roles.Admin, Roles.Customer, Roles.RestaurantOwner];
 
         var existing = await context.Roles.Where(r => r.Name != null && allRoles.Contains(r.Name)).Select(r => r.Name).ToListAsync();
         var needToBeAdded = allRoles.Except(existing).ToList();
@@ -64,22 +70,44 @@ public class ApplicationDbContextInitialiser(
         {
             await roleManager.CreateAsync(new ApplicationRole { Name = roleName });
         }
-         
+
         // Default users
-        //var admin = new ApplicationUser { UserName = "admin@rooorder.com", Email = "admin@rooorder.com" };
-        //var user = new ApplicationUser { UserName = "user@rooorder.com", Email = "user@rooorder.com" };
+        var admin = new Admin { UserName = "admin1", Email = "admin@rooorder.com", EmailConfirmed = true };
+        var customer = new Customer { UserName = "customer1", Email = "user@rooorder.com", EmailConfirmed = true };
+        var restaurantOwner = new RestaurantOwner { UserName = "owner1", Email = "owner.kfc@rooorder.com", EmailConfirmed = true };
 
-        //if (userManager.Users.All(u => u.UserName != admin.UserName))
-        //{
-        //    await userManager.CreateAsync(admin, "123456");
-        //    await userManager.AddToRolesAsync(admin, new[] { Roles.Admin });
+        if (!(await userManager.Users.AnyAsync(u => u.UserName == admin.UserName)))
+        {
+            var result = await userManager.CreateAsync(admin, "123456");
+            if (result.Succeeded)
+                await userManager.AddToRolesAsync(admin, new[] { Roles.Admin });
 
-        //    if (!await userManager.Users.AnyAsync(u => u.UserName == user.UserName))
-        //    {
-        //        await userManager.CreateAsync(user, "123456");
-        //        await userManager.AddToRoleAsync(user, Roles.User);
-        //    }
-        //}
-        
+            if (!await userManager.Users.AnyAsync(u => u.UserName == customer.UserName))
+            {
+                await userManager.CreateAsync(customer, "123456");
+                await userManager.AddToRoleAsync(customer, Roles.Customer);
+            }
+            if (!(await userManager.Users.AnyAsync(u => u.UserName == restaurantOwner.UserName)))
+            {
+                await userManager.CreateAsync(restaurantOwner, "123456");
+                await userManager.AddToRoleAsync(restaurantOwner, Roles.RestaurantOwner);
+            }
+        }
+        // add restaurant
+        if (!(await context.Restaurants.AnyAsync()))
+        {
+            var restaurant = new Restaurant
+            {
+                Name = "kfc",
+                Description = "fried chicken",
+                City = "Nasr City",
+                Region = "Abas El-Aqqad",
+                IsActive = true,
+                OwnerId = restaurantOwner.Id,
+            };
+            await context.Restaurants.AddAsync(restaurant);
+            await context.SaveChangesAsync();
+        }
+
     }
 }

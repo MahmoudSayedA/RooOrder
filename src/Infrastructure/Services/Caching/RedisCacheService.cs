@@ -48,5 +48,8 @@ public class RedisCacheService(IDistributedCache cache) : ICacheService
         await SetDataAsync(key, version, cancellationToken);
     }
 
-
+    public Task SetDataAsync<T>(string key, T data, TimeSpan time, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
 }
