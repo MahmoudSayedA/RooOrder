@@ -8,26 +8,27 @@ public class InMemoryCacheService(IMemoryCache cache) : ICacheService
 {
     private readonly IMemoryCache _cache = cache;
 
-    public async Task RemoveAsync(string key, CancellationToken cancellationToken)
+    public Task RemoveAsync(string key, CancellationToken ct = default)
     {
-        await Task.Run(() => _cache.Remove(key), cancellationToken);
+        _cache.Remove(key);
+        return Task.CompletedTask;
     }
 
     public async Task<T?> GetDataAsync<T>(string key, CancellationToken cancellationToken)
     {
-        var data = await Task.Run(() => _cache.Get(key), cancellationToken) as string;
-        if (data is null)
-        {
-            return default;
-        }
+        T? value = default;
+        await Task.Run(() => _cache.TryGetValue(key, out T? value));
 
-        return JsonSerializer.Deserialize<T>(data);
+        return value;
     }
-
     public async Task SetDataAsync<T>(string key, T data, CancellationToken cancellationToken)
     {
 
-        await Task.Run(() => _cache.Set(key, JsonSerializer.Serialize(data)), cancellationToken);
+        await Task.Run(() => _cache.Set(key, data, new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20),
+            SlidingExpiration = TimeSpan.FromMinutes(5)
+        }));
 
     }
 
