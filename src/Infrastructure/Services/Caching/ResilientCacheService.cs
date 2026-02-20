@@ -97,4 +97,8 @@ public class ResilientCacheService : ICacheService
         }
     }
 
+    public Task SetDataAsync<T>(string key, T data, TimeSpan time, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
 }
