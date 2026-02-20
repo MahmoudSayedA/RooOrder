@@ -6,7 +6,7 @@ namespace Domain.Entities.Users;
 public abstract class ApplicationUser : IdentityUser<Guid>
 {
     public abstract string MainRole { get; set; }
-    public bool IsActive { get; set; }
+    public bool IsActive { get; set; } = true;
     public bool IsDeleted { get; set; }
 }
 

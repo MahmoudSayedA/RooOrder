@@ -8,6 +8,7 @@ using Domain.Entities.Users;
 using Hangfire;
 using Infrastructure.Data;
 using Infrastructure.Data.Interceptors;
+using Infrastructure.Data.Seeding;
 using Infrastructure.Identity;
 using Infrastructure.Identity.JWT;
 using Infrastructure.Services.Caching;
@@ -116,6 +117,7 @@ namespace Infrastructure
 
             services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
             services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
+            services.AddScoped<ApplicationDbContextInitialiser>();
 
         }
 
@@ -123,10 +125,10 @@ namespace Infrastructure
         {
             services.AddIdentity<ApplicationUser, ApplicationRole>(o =>
             {
-                o.Password.RequireDigit = true;
-                o.Password.RequireLowercase = true;
-                o.Password.RequireUppercase = true;
-                o.Password.RequireNonAlphanumeric = false;
+                o.Password.RequireDigit = false;
+                o.Password.RequireLowercase = false;
+                o.Password.RequireUppercase = false;
+                o.Password.RequireNonAlphanumeric = false; // TODO: Change this in production
                 o.Password.RequiredLength = 6;
                 o.User.RequireUniqueEmail = true;
                 o.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
