@@ -23,7 +23,7 @@ public partial class CreateRestaurantCommandHandler
 
 
             //check if id is find in RestaurantOwner 
-            RuleFor(x => x.Id).MustAsync(async (id, cancellation) =>
+            RuleFor(x => x.OwnerId).MustAsync(async (id, cancellation) =>
             {
                 return await _dbContext.Set<RestaurantOwner>().AnyAsync(r => r.Id == Guid.Parse(id), cancellation);
             }).WithMessage("Restaurant owner with the specified Id does not exist.");

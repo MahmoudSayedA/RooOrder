@@ -18,7 +18,7 @@ public partial class CreateRestaurantCommandHandler(IApplicationDbContext dbCont
                 Region = request.Region,
                 City = request.City,
                 IsActive = request.IsActive,
-                OwnerId = Guid.Parse(request.Id)
+                OwnerId = Guid.Parse(request.OwnerId)
 
             };
 
