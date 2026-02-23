@@ -1,9 +1,9 @@
-﻿using Application.Common.Models;
+﻿using Application.Common.Exceptions;
+using Application.Common.Models;
 using Application.Identity.Commands;
 using Application.Identity.Dtos;
 using Application.Identity.Services;
 using MediatR;
-using MediatR.NotificationPublishers;
 using Moq;
 
 namespace Application.Unit.Tests.Identity.Commands;
@@ -43,5 +43,31 @@ public class RegisterCommandHandlerTests
         // Assert
         Assert.NotNull(result);
         Assert.IsType<string>(result);
+    }
+
+    [Fact]
+    public async Task Handle_WithRegistrationFailure_ThrowsValidationException()
+    {
+        // Arrange
+        var command = new RegisterCommand
+        {
+            Username = "testuser",
+            Email = "notValidEmail",
+            Password = "Password123!",
+            ConfirmPassword = "notMatchPassword"
+        };
+        var identityServiceMock = new Mock<IAuthenticationService>();
+        identityServiceMock.Setup(service =>
+            service.RegisterAsync(It.IsAny<RegisterDto>()))
+            .ReturnsAsync(Result<Guid>.Failure(new List<string> { "Registration failed" }));
+
+        var publisherMock = new Mock<IPublisher>();
+        publisherMock.Setup(p => p.Publish(It.IsAny<INotification>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var handler = new RegisterCommandHandler(identityServiceMock.Object, publisherMock.Object);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ValidationException>(() => handler.Handle(command, CancellationToken.None));
     }
 }

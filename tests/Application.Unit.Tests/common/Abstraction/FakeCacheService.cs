@@ -42,4 +42,9 @@ internal class FakeCacheService : ICacheService
         _cache[key] = data;
         return Task.CompletedTask;
     }
+
+    public Task SetDataAsync<T>(string key, T data, TimeSpan time, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
 }
